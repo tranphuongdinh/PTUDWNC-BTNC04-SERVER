@@ -6,6 +6,12 @@ const { SECRET_TOKEN, STATUS } = require("../../constants/common");
 
 const register = async (req, res) => {
   try {
+    const user = await User.findOne({
+      email: req.body.email,
+    });
+
+    if (user) return res.status(400).json({ status: STATUS.ERROR, error: "Email is used!" });
+
     const newPassword = await bcrypt.hash(req.body.password, 10);
     await User.create({
       name: req.body.name,
@@ -15,7 +21,7 @@ const register = async (req, res) => {
 
     return res.status(200).json({ status: STATUS.OK });
   } catch (err) {
-    return res.status(400).json({ status: STATUS.ERROR, error: "Email is used!" });
+    return res.status(400).json({ status: STATUS.ERROR, error: `Register failed: ${err}` });
   }
 };
 
@@ -41,7 +47,7 @@ const login = async (req, res) => {
 
     return res.status(200).json({ status: STATUS.OK, user: token });
   } else {
-    return res.status(400).json({ status: STATUS.ERROR, user: false });
+    return res.status(400).json({ status: STATUS.ERROR, user: false, error: "Invalid email or password" });
   }
 };
 
